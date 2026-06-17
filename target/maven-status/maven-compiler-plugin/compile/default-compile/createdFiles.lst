@@ -1,0 +1,5 @@
+com\lumenai\dto\JwtResponse.class
+com\lumenai\dto\RegisterRequest.class
+com\lumenai\exception\GlobalExceptionHandler.class
+com\lumenai\dto\LoginRequest.class
+com\lumenai\exception\ResourceNotFoundException.class

@@ -1,0 +1,1 @@
+LumenAi is an advanced AI learning tutor. It parses textbooks, PDF documents, and lecture notes to generate interactive study guides, structured summaries, adaptive quizzes, and revision flashcards. This allows students and researchers to accelerate their learning and check their knowledge retention.

@@ -1,0 +1,51 @@
+version: '3.9'
+
+services:
+  # PostgreSQL (local dev with real database)
+  postgres:
+    image: postgres:15-alpine
+    container_name: lumenai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: lumenai_db
+      POSTGRES_USER: ${DB_USERNAME:-lumenai}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-lumenai_local_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-lumenai} -d lumenai_db"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+
+  # Spring Boot Backend
+  backend:
+    build: .
+    container_name: lumenai-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: jdbc:postgresql://postgres:5432/lumenai_db
+      DB_USERNAME: ${DB_USERNAME:-lumenai}
+      DB_PASSWORD: ${DB_PASSWORD:-lumenai_local_password}
+      JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-in-production-min-32-chars}
+      MAIL_ENABLED: ${MAIL_ENABLED:-false}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+      GOOGLE_BOOKS_API_KEY: ${GOOGLE_BOOKS_API_KEY:-}
+      APP_URL: ${APP_URL:-http://localhost:5173}
+
+volumes:
+  postgres_data:
