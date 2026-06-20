@@ -1,0 +1,22 @@
+# Target build directory
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Local database directory
+data/
+
+# Local environment variables and secrets
+.env
+.env.local
+
+# IDE configurations
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Logs and temp files
+*.log
+temp/
+uploads/

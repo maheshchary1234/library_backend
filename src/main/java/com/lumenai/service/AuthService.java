@@ -27,21 +27,16 @@ public class AuthService {
             throw new RuntimeException("Email already in use");
         }
 
-        String verificationToken = UUID.randomUUID().toString();
-
         User user = User.builder()
                 .name(name)
                 .email(email)
                 .password(passwordEncoder.encode(password))
-                .verified(false)
-                .verificationToken(verificationToken)
+                .verified(true)
+                .verificationToken(null)
                 .build();
         userRepository.save(user);
 
-        // Send verification email (logs to console in local dev when mail is disabled)
-        emailService.sendVerificationEmail(email, name, verificationToken);
-
-        return "User registered successfully. Please check your email to verify your account.";
+        return "User registered successfully. You can now log in.";
     }
 
     public String verify(String token) {
