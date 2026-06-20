@@ -1,7 +1,7 @@
 package com.lumenai.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -11,11 +11,14 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class EmailService {
 
     private final JavaMailSender mailSender;
+
+    public EmailService(@Autowired(required = false) JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
     @Value("${spring.mail.enabled:false}")
     private boolean mailEnabled;
