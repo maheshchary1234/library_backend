@@ -15,6 +15,12 @@ public class DatabaseConfig {
     @Value("${DATABASE_URL}")
     private String databaseUrl;
 
+    @Value("${DB_USERNAME:}")
+    private String defaultUsername;
+
+    @Value("${DB_PASSWORD:}")
+    private String defaultPassword;
+
     @Bean
     public DataSource dataSource() {
         try {
@@ -37,6 +43,14 @@ public class DatabaseConfig {
                 if (userInfo.length >= 2) {
                     password = userInfo[1];
                 }
+            }
+            
+            // Fallback to environment variables if not present in the URL
+            if (username == null || username.isEmpty()) {
+                username = defaultUsername;
+            }
+            if (password == null || password.isEmpty()) {
+                password = defaultPassword;
             }
             
             // Build jdbc url without credentials
