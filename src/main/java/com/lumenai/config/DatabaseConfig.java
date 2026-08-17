@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import javax.sql.DataSource;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 @Profile("prod")
@@ -24,7 +26,7 @@ public class DatabaseConfig {
     @Bean
     public DataSource dataSource() {
         try {
-            // Render database url format: postgresql://username:password@host/database
+            // Render / Cloud database url format: postgresql://username:password@host:port/database?sslmode=require
             String cleanUrl = databaseUrl;
             if (cleanUrl.startsWith("jdbc:")) {
                 cleanUrl = cleanUrl.substring(5);
@@ -36,12 +38,12 @@ public class DatabaseConfig {
             String password = null;
             
             if (dbUri.getUserInfo() != null) {
-                String[] userInfo = dbUri.getUserInfo().split(":");
-                if (userInfo.length >= 1) {
-                    username = userInfo[0];
+                String[] userInfo = dbUri.getUserInfo().split(":", 2);
+                if (userInfo.length >= 1 && !userInfo[0].isEmpty()) {
+                    username = URLDecoder.decode(userInfo[0], StandardCharsets.UTF_8);
                 }
-                if (userInfo.length >= 2) {
-                    password = userInfo[1];
+                if (userInfo.length >= 2 && !userInfo[1].isEmpty()) {
+                    password = URLDecoder.decode(userInfo[1], StandardCharsets.UTF_8);
                 }
             }
             
@@ -53,12 +55,24 @@ public class DatabaseConfig {
                 password = defaultPassword;
             }
             
-            // Build jdbc url without credentials
             String host = dbUri.getHost();
             int port = dbUri.getPort();
             String path = dbUri.getPath();
+            String query = dbUri.getQuery();
             
-            String jdbcUrl = "jdbc:postgresql://" + host + (port == -1 ? "" : ":" + port) + path;
+            StringBuilder jdbcUrlBuilder = new StringBuilder("jdbc:postgresql://")
+                    .append(host)
+                    .append(port == -1 ? "" : ":" + port)
+                    .append(path != null ? path : "");
+                    
+            if (query != null && !query.trim().isEmpty()) {
+                jdbcUrlBuilder.append("?").append(query);
+            } else {
+                // Default to sslmode=require for cloud PostgreSQL hosts (e.g. Render, Neon, Supabase)
+                jdbcUrlBuilder.append("?sslmode=require");
+            }
+            
+            String jdbcUrl = jdbcUrlBuilder.toString();
             
             return DataSourceBuilder.create()
                     .driverClassName("org.postgresql.Driver")
@@ -71,3 +85,4 @@ public class DatabaseConfig {
         }
     }
 }
+
